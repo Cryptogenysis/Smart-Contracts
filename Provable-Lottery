@@ -1,0 +1,108 @@
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.7.0 <0.9.0;
+
+import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFConsumerBase.sol";
+
+contract Lottery is VRFConsumerBase {
+    address public owner;
+    address payable[] public players;
+    uint public lotteryId;
+    mapping (uint => address payable) public lotteryHistory;
+
+    bytes32 internal keyHash; //Identifies which ChainLink oracle to use
+uint internal fee; // LINK fee to get random numbers
+uint public randomResult; //Random number derived from chainlink oracle
+
+
+constructor()
+ 
+    //VRF coordinator & LINK token address 
+    VRFConsumerBase(0x8C7382F9D8f56b33781fE506E897a4F1e2d17255, 0x326C977E6efc84E512bB9C30f76E30c160eD06FB) {
+        keyHash = 0x6e75b569a01ef56d18cab6a8e71e6600d6ce853834d4a5748b720d06f878b3a4;
+        fee = 0.0001 * 10 **18; // gwei to LINK
+
+        owner = msg.sender;
+        lotteryId = 1;
+ } 
+
+function getRandomNumber() public returns(bytes32 requestId) {
+    require(LINK.balanceOf(address(this)) >= fee, "Not Enough LINK in contaract");
+        return requestRandomness(keyHash, fee);
+
+}
+
+  function fulfillRandomness(bytes32 requestId, uint randomness) internal override {
+        randomResult = randomness/*.mod(10).add(1)*/;
+        payWinner();
+    }
+
+
+    
+   
+function getWinnerByLottery(uint lotteryNumber) public view returns(address payable){
+return lotteryHistory[lotteryNumber];
+
+}
+
+function getBalance() public view returns (uint){
+    return address(this).balance;
+
+}
+
+function getPlayers() public view returns (address payable[] memory, uint) {
+    return(players, players.length);
+} 
+
+function pay2Enter() public payable {
+    //require ether  to enter
+        require(msg.value > .0001 ether);
+
+    //address of player entering lottery
+        players.push(payable(msg.sender));
+    
+}
+
+/* 
+function getPseudoRandomNumber() public view returns (uint) {
+return uint(keccak256(abi.encodePacked (owner, block.timestamp)));
+
+} 
+*/
+
+// Calls on ChainLink to get random number & performs modulus of player array length.
+
+function pickWinner() public onlyOwner{
+    getRandomNumber();
+}
+
+
+function payWinner() public {
+//Gets the remainder of the random number divided by the total player count
+uint index = randomResult % players.length;
+
+//
+uint gratuityFee = address(this).balance / 7;
+
+//Transfers a 1/7th fraction of the prize pool to the contract creator
+ payable(msg.sender).transfer(gratuityFee);
+
+//Transfers the prize pool to the winning wallet
+players[index].transfer(address(this).balance);
+
+//increment the total # of times the lottery has ever been played
+lotteryHistory[lotteryId] = players[index];
+lotteryId++;
+
+//reset the state 
+    players = new address payable[](0);
+
+}
+
+
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
+}
