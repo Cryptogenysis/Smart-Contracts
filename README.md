@@ -1,2 +1,2 @@
-# Smart-Contracts
-An assorted collection of my smart contract projects
+# An assorted collection of my smart contract projects👨🏾‍💻
+
