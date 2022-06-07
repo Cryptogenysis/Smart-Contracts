@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity   >=0.7.0 <0.9.0;
+
+import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
+
+contract RandomNumber is VRFConsumerBase {
+bytes32 internal keyHash; //Identifies which ChainLink oracle to use
+uint internal fee; // LINK fee to get random numbers
+uint public randomResult; //Random number derived from chainlink oracle
+
+
+
+
+constructor()
+ 
+    //VRF coordinator & LINK token address 
+    VRFConsumerBase(0x8C7382F9D8f56b33781fE506E897a4F1e2d17255, 0x326C977E6efc84E512bB9C30f76E30c160eD06FB) {
+        keyHash = 0x6e75b569a01ef56d18cab6a8e71e6600d6ce853834d4a5748b720d06f878b3a4;
+        fee = 0.0001 * 10 **18; // gwei to LINK
+ }
+
+ 
+
+function getRandomNumber() public returns(bytes32 requestId) {
+    require(LINK.balanceOf(address(this)) >= fee, "Not Enough LINK in contaract");
+        return requestRandomness(keyHash, fee);
+
+}
+
+  function fulfillRandomness(bytes32 requestId, uint randomness) internal override {
+        randomResult = randomness.mod(10).add(1);
+        
+    }
+
+}
